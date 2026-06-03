@@ -21,16 +21,27 @@ export const TradingProvider = ({ children }) => {
     localStorage.setItem('monthlyTarget', JSON.stringify(monthlyTarget));
   }, [monthlyTarget]);
 
-  const addSession = useCallback((date, sessionName, pnl) => {
+  const addSession = useCallback((date, sessionName, pnl, journalData = {}) => {
     const newTrade = {
       id: Date.now(),
       date,
       sessionName,
       pnl: parseFloat(pnl),
       timestamp: new Date().toISOString(),
+      // Journal fields
+      notes: journalData.notes || '',
+      setup: journalData.setup || '',
+      emotion: journalData.emotion || '',
+      instrument: journalData.instrument || '',
     };
     setTrades((prev) => [newTrade, ...prev]);
     return newTrade;
+  }, []);
+
+  const updateSession = useCallback((id, updates) => {
+    setTrades((prev) =>
+      prev.map((trade) => (trade.id === id ? { ...trade, ...updates } : trade))
+    );
   }, []);
 
   const deleteSession = useCallback((id) => {
@@ -58,16 +69,11 @@ export const TradingProvider = ({ children }) => {
     const monthlyMap = {};
     trades.forEach((trade) => {
       const month = trade.date.slice(0, 7);
-      if (!monthlyMap[month]) {
-        monthlyMap[month] = 0;
-      }
+      if (!monthlyMap[month]) monthlyMap[month] = 0;
       monthlyMap[month] += trade.pnl;
     });
     return Object.entries(monthlyMap)
-      .map(([month, pnl]) => ({
-        month,
-        pnl,
-      }))
+      .map(([month, pnl]) => ({ month, pnl }))
       .sort((a, b) => a.month.localeCompare(b.month));
   }, [trades]);
 
@@ -78,16 +84,11 @@ export const TradingProvider = ({ children }) => {
     trades
       .filter((trade) => trade.date.startsWith(currentMonth))
       .forEach((trade) => {
-        if (!dailyMap[trade.date]) {
-          dailyMap[trade.date] = 0;
-        }
+        if (!dailyMap[trade.date]) dailyMap[trade.date] = 0;
         dailyMap[trade.date] += trade.pnl;
       });
     return Object.entries(dailyMap)
-      .map(([date, pnl]) => ({
-        date,
-        pnl,
-      }))
+      .map(([date, pnl]) => ({ date, pnl }))
       .sort((a, b) => a.date.localeCompare(b.date));
   }, [trades]);
 
@@ -100,22 +101,14 @@ export const TradingProvider = ({ children }) => {
   const getStats = useCallback(() => {
     if (trades.length === 0) {
       return {
-        totalTrades: 0,
-        winRate: 0,
-        avgWin: 0,
-        avgLoss: 0,
-        largestWin: 0,
-        largestLoss: 0,
-        profitFactor: 0,
+        totalTrades: 0, winRate: 0, avgWin: 0, avgLoss: 0,
+        largestWin: 0, largestLoss: 0, profitFactor: 0,
       };
     }
-
     const wins = trades.filter((t) => t.pnl > 0);
     const losses = trades.filter((t) => t.pnl < 0);
-
     const totalWins = wins.reduce((sum, t) => sum + t.pnl, 0);
     const totalLosses = Math.abs(losses.reduce((sum, t) => sum + t.pnl, 0));
-
     return {
       totalTrades: trades.length,
       winRate: ((wins.length / trades.length) * 100).toFixed(2),
@@ -145,6 +138,7 @@ export const TradingProvider = ({ children }) => {
         monthlyTarget,
         setMonthlyTarget,
         addSession,
+        updateSession,
         deleteSession,
         getTodaysSessions,
         getTodaysPnL,

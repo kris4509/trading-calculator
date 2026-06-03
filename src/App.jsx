@@ -4,6 +4,7 @@ import DailyTracker from "./components/DailyTracker";
 import Charts from "./components/Charts";
 import Statistics from "./components/Statistics";
 import Settings from "./components/Settings";
+import Journal from "./components/Journal";
 import Header from "./components/Header";
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
           {[
             { id: "dashboard", label: "📊 Dashboard" },
             { id: "sessions", label: "📝 Sessions" },
+            { id: "journal", label: "📖 Journal" },
             { id: "charts", label: "📈 Charts" },
             { id: "statistics", label: "📉 Statistics" },
             { id: "settings", label: "⚙️ Settings" },
@@ -41,6 +43,7 @@ function App() {
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6">
           {activeTab === "dashboard" && <Dashboard />}
           {activeTab === "sessions" && <DailyTracker />}
+          {activeTab === "journal" && <Journal />}
           {activeTab === "charts" && <Charts />}
           {activeTab === "statistics" && <Statistics />}
           {activeTab === "settings" && <Settings />}
