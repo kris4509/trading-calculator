@@ -1,14 +1,144 @@
 ﻿import React, { useContext } from "react";
 import { TradingContext } from "../context/TradingContext";
-import { TrendingUp, Award, Target, AlertCircle, Clock } from "lucide-react";
+import { TrendingUp, TrendingDown, Award, Target, Flame, Zap } from "lucide-react";
+
+function StreakTracker({ streaks }) {
+  const { currentStreak, currentStreakType, longestWinStreak, longestLossStreak } = streaks;
+
+  const isWinStreak = currentStreakType === 'win';
+  const isLossStreak = currentStreakType === 'loss';
+  const hasStreak = currentStreak > 0;
+
+  const flames = Math.min(currentStreak, 7);
+
+  return (
+    <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-6">
+      <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+        <Flame size={20} className={isWinStreak ? "text-orange-500" : "text-slate-400"} />
+        Streak Tracker
+      </h3>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        {/* Current Streak */}
+        <div className={`rounded-xl p-5 text-center border-2 ${
+          isWinStreak
+            ? 'border-orange-400 bg-orange-50 dark:bg-orange-900/20'
+            : isLossStreak
+            ? 'border-red-400 bg-red-50 dark:bg-red-900/20'
+            : 'border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700'
+        }`}>
+          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">
+            Current Streak
+          </p>
+          {hasStreak ? (
+            <>
+              <div className="flex justify-center mb-1">
+                {Array.from({ length: flames }).map((_, i) => (
+                  <span
+                    key={i}
+                    className="text-2xl"
+                    style={{ opacity: 0.4 + (i / flames) * 0.6, transform: `scale(${0.7 + (i / flames) * 0.5})` }}
+                  >
+                    {isWinStreak ? '🔥' : '❄️'}
+                  </span>
+                ))}
+              </div>
+              <p className={`text-4xl font-black ${isWinStreak ? 'text-orange-500' : 'text-red-500'}`}>
+                {currentStreak}
+              </p>
+              <p className={`text-sm font-semibold mt-1 ${isWinStreak ? 'text-orange-600 dark:text-orange-400' : 'text-red-600 dark:text-red-400'}`}>
+                {isWinStreak ? 'Win' : 'Loss'}{currentStreak === 1 ? '' : 's'} in a row
+              </p>
+              {isWinStreak && currentStreak >= 3 && (
+                <p className="text-xs text-orange-500 dark:text-orange-400 mt-2 font-medium animate-pulse">
+                  🔥 You're on fire!
+                </p>
+              )}
+              {isLossStreak && currentStreak >= 3 && (
+                <p className="text-xs text-red-500 dark:text-red-400 mt-2 font-medium">
+                  ⚠️ Consider taking a break
+                </p>
+              )}
+            </>
+          ) : (
+            <>
+              <p className="text-4xl font-black text-gray-400 dark:text-gray-500">—</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">No trades yet</p>
+            </>
+          )}
+        </div>
+
+        {/* Longest Win Streak */}
+        <div className="rounded-xl p-5 text-center bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800/40">
+          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">
+            Best Win Streak
+          </p>
+          <div className="text-3xl mb-1">🏆</div>
+          <p className="text-4xl font-black text-green-600 dark:text-green-400">{longestWinStreak}</p>
+          <p className="text-sm text-green-700 dark:text-green-400 mt-1 font-medium">
+            {longestWinStreak === 0 ? 'No wins yet' : longestWinStreak === 1 ? 'win in a row' : 'wins in a row'}
+          </p>
+          {isWinStreak && currentStreak === longestWinStreak && longestWinStreak > 1 && (
+            <p className="text-xs text-green-600 dark:text-green-400 mt-2 font-semibold">
+              ✨ Personal best!
+            </p>
+          )}
+        </div>
+
+        {/* Longest Loss Streak */}
+        <div className="rounded-xl p-5 text-center bg-slate-50 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600">
+          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">
+            Worst Loss Streak
+          </p>
+          <div className="text-3xl mb-1">📉</div>
+          <p className="text-4xl font-black text-slate-600 dark:text-slate-300">{longestLossStreak}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">
+            {longestLossStreak === 0 ? 'No losses yet' : longestLossStreak === 1 ? 'loss in a row' : 'losses in a row'}
+          </p>
+          {longestLossStreak >= 5 && (
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+              Review your strategy
+            </p>
+          )}
+        </div>
+
+      </div>
+
+      {/* Streak progress bar */}
+      {hasStreak && (
+        <div className="mt-4">
+          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
+            <span>{isWinStreak ? '🔥 Win streak progress' : '❄️ Loss streak'}</span>
+            <span>
+              {currentStreak} / {isWinStreak ? longestWinStreak || currentStreak : longestLossStreak || currentStreak} all-time {isWinStreak ? 'best' : 'worst'}
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 dark:bg-slate-600 rounded-full h-2">
+            <div
+              className={`h-2 rounded-full transition-all ${isWinStreak ? 'bg-orange-500' : 'bg-red-400'}`}
+              style={{
+                width: `${Math.min(
+                  (currentStreak / Math.max(isWinStreak ? longestWinStreak : longestLossStreak, currentStreak)) * 100,
+                  100
+                )}%`
+              }}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function Dashboard() {
-  const { 
-    getTodaysPnL, 
-    getMonthlyPnL, 
+  const {
+    getTodaysPnL,
+    getMonthlyPnL,
     getMonthlyProgress,
     getStats,
     getTodaysSessions,
+    getStreaks,
     trades,
   } = useContext(TradingContext);
 
@@ -16,30 +146,16 @@ function Dashboard() {
   const monthlyPnL = getMonthlyPnL();
   const progress = getMonthlyProgress();
   const stats = getStats();
-  const recentSessions = getTodaysSessions().slice(0, 5);
+  const streaks = getStreaks();
 
-  // Calculate streaks manually
-  const wins = trades.filter((t) => t.pnl > 0);
-  const losses = trades.filter((t) => t.pnl < 0);
-  let winStreak = 0;
-  for (let i = 0; i < trades.length; i++) {
-    if (trades[i].pnl > 0) {
-      winStreak++;
-    } else {
-      break;
-    }
-  }
-
-  // Get daily data
+  // Get daily data for this month
   const dailyMap = {};
   const now = new Date();
   const currentMonth = now.toISOString().slice(0, 7);
   trades
     .filter((trade) => trade.date.startsWith(currentMonth))
     .forEach((trade) => {
-      if (!dailyMap[trade.date]) {
-        dailyMap[trade.date] = 0;
-      }
+      if (!dailyMap[trade.date]) dailyMap[trade.date] = 0;
       dailyMap[trade.date] += trade.pnl;
     });
 
@@ -47,29 +163,34 @@ function Dashboard() {
     .map(([date, pnl]) => ({ date, pnl }))
     .sort((a, b) => a.date.localeCompare(b.date));
 
-  const bestDay = dailyData.length > 0 ? dailyData.reduce((best, current) => parseFloat(current.pnl) > parseFloat(best.pnl) ? current : best) : null;
-  const worstDay = dailyData.length > 0 ? dailyData.reduce((worst, current) => parseFloat(current.pnl) < parseFloat(worst.pnl) ? current : worst) : null;
+  const bestDay = dailyData.length > 0
+    ? dailyData.reduce((best, cur) => cur.pnl > best.pnl ? cur : best)
+    : null;
+  const worstDay = dailyData.length > 0
+    ? dailyData.reduce((worst, cur) => cur.pnl < worst.pnl ? cur : worst)
+    : null;
 
-  // Calculate max drawdown
-  let maxDrawdown = 0;
-  let peak = 0;
-  let runningTotal = 0;
-  trades.sort((a, b) => new Date(a.date) - new Date(b.date)).forEach((trade) => {
-    runningTotal += trade.pnl;
-    if (runningTotal > peak) peak = runningTotal;
-    const drawdown = peak - runningTotal;
-    if (drawdown > maxDrawdown) maxDrawdown = drawdown;
-  });
+  // Max drawdown
+  let maxDrawdown = 0, peak = 0, runningTotal = 0;
+  [...trades]
+    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+    .forEach((trade) => {
+      runningTotal += trade.pnl;
+      if (runningTotal > peak) peak = runningTotal;
+      const drawdown = peak - runningTotal;
+      if (drawdown > maxDrawdown) maxDrawdown = drawdown;
+    });
 
   // Achievements
   const achievements = [];
   if (stats.winRate >= 50) achievements.push({ id: "balanced", name: "⚖️ Balanced Trader", desc: "50%+ win rate" });
   if (stats.winRate >= 70) achievements.push({ id: "winning", name: "🎯 Winning Streak", desc: "70%+ win rate" });
   if (progress.isTargetReached) achievements.push({ id: "target", name: "🏆 Target Master", desc: "Monthly target reached" });
-  if (winStreak >= 3) achievements.push({ id: "hot", name: "🔥 Hot Hand", desc: `${winStreak} wins in a row` });
+  if (streaks.currentStreak >= 3 && streaks.currentStreakType === 'win') achievements.push({ id: "hot", name: "🔥 Hot Hand", desc: `${streaks.currentStreak} wins in a row` });
   if (stats.profitFactor >= 2) achievements.push({ id: "profitable", name: "💰 Profit Master", desc: "2.0+ profit factor" });
   if (stats.totalTrades >= 10) achievements.push({ id: "consistent", name: "📊 Consistent", desc: "10+ total trades" });
   if (todayPnL > 0) achievements.push({ id: "daily", name: "✨ Daily Profit", desc: "Profitable today" });
+  if (streaks.longestWinStreak >= 5) achievements.push({ id: "legend", name: "🌟 Streak Legend", desc: "5+ win streak achieved" });
 
   const tradingTips = [
     "Consistency beats perfection - focus on small, repeated profits",
@@ -88,8 +209,7 @@ function Dashboard() {
     "The only person you need to be better than is who you were yesterday",
     "Trading is a marathon, not a sprint - pace yourself",
   ];
-  
-  // Get quote based on day to ensure it changes daily
+
   const today = new Date();
   const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
   const dailyTip = tradingTips[dayOfYear % tradingTips.length];
@@ -102,7 +222,7 @@ function Dashboard() {
         <p className="text-blue-100">Track, analyze, and improve your trading performance every day</p>
       </div>
 
-      {/* Quick Stats Overview */}
+      {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-4 border-l-4 border-green-500">
           <p className="text-gray-600 dark:text-gray-400 text-xs font-semibold uppercase">Today's P&L</p>
@@ -148,13 +268,11 @@ function Dashboard() {
         </p>
       </div>
 
+      {/* 🔥 Streak Tracker */}
+      <StreakTracker streaks={streaks} />
+
       {/* Performance Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-4 border-l-4 border-red-500">
-          <p className="text-gray-600 dark:text-gray-400 text-xs font-semibold uppercase">Win Streak</p>
-          <p className="text-3xl font-bold mt-2 text-red-600">{winStreak}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Consecutive wins</p>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-4 border-l-4 border-yellow-500">
           <p className="text-gray-600 dark:text-gray-400 text-xs font-semibold uppercase">Max Drawdown</p>
           <p className="text-3xl font-bold mt-2 text-yellow-600">${maxDrawdown.toFixed(2)}</p>
@@ -170,7 +288,7 @@ function Dashboard() {
       {/* Best & Worst Days */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-4">
-          <h4 className="font-bold text-green-600 mb-3">🏆 Best Day</h4>
+          <h4 className="font-bold text-green-600 mb-3">🏆 Best Day This Month</h4>
           {bestDay ? (
             <>
               <p className="text-2xl font-bold text-green-600">${bestDay.pnl.toFixed(2)}</p>
@@ -181,7 +299,7 @@ function Dashboard() {
           )}
         </div>
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-4">
-          <h4 className="font-bold text-red-600 mb-3">📉 Worst Day</h4>
+          <h4 className="font-bold text-red-600 mb-3">📉 Worst Day This Month</h4>
           {worstDay ? (
             <>
               <p className="text-2xl font-bold text-red-600">${worstDay.pnl.toFixed(2)}</p>
@@ -204,7 +322,7 @@ function Dashboard() {
             {achievements.map((achievement) => (
               <div
                 key={achievement.id}
-                className="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900 dark:to-amber-900 rounded p-3 border border-yellow-200 dark:border-yellow-700"
+                className="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/30 dark:to-amber-900/30 rounded p-3 border border-yellow-200 dark:border-yellow-700"
               >
                 <p className="font-bold text-gray-800 dark:text-gray-100">{achievement.name}</p>
                 <p className="text-sm text-gray-600 dark:text-gray-300">{achievement.desc}</p>
@@ -214,18 +332,16 @@ function Dashboard() {
         </div>
       )}
 
-      {/* Trading Tips */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900 rounded-lg shadow p-6 border-l-4 border-blue-500">
-        <h3 className="text-lg font-bold mb-2 text-blue-900 dark:text-blue-100">💡 Daily Motivation Quote</h3>
+      {/* Daily Tip */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-lg shadow p-6 border-l-4 border-blue-500">
+        <h3 className="text-lg font-bold mb-2 text-blue-900 dark:text-blue-100">💡 Daily Motivation</h3>
         <p className="text-blue-800 dark:text-blue-100 italic text-lg">"{dailyTip}"</p>
       </div>
 
-      {/* About the App */}
-      <div className="bg-gradient-to-r from-indigo-100 to-blue-100 dark:from-indigo-900 dark:to-blue-900 rounded-lg shadow p-6">
+      {/* About */}
+      <div className="bg-gradient-to-r from-indigo-100 to-blue-100 dark:from-indigo-900/30 dark:to-blue-900/30 rounded-lg shadow p-6">
         <h3 className="text-lg font-bold mb-3 text-indigo-900 dark:text-indigo-100">📊 About This Dashboard</h3>
-        <p className="text-indigo-800 dark:text-indigo-200 mb-3">
-          Your personal trading performance hub. This dashboard helps you:
-        </p>
+        <p className="text-indigo-800 dark:text-indigo-200 mb-3">Your personal trading performance hub. This dashboard helps you:</p>
         <ul className="text-indigo-800 dark:text-indigo-200 space-y-2">
           <li>✅ Track daily, weekly, and monthly performance</li>
           <li>✅ Monitor win rates and profit streaks</li>

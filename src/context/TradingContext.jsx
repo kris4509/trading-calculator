@@ -28,7 +28,6 @@ export const TradingProvider = ({ children }) => {
       sessionName,
       pnl: parseFloat(pnl),
       timestamp: new Date().toISOString(),
-      // Journal fields
       notes: journalData.notes || '',
       setup: journalData.setup || '',
       emotion: journalData.emotion || '',
@@ -131,6 +130,38 @@ export const TradingProvider = ({ children }) => {
     };
   }, [getMonthlyPnL, monthlyTarget]);
 
+  const getStreaks = useCallback(() => {
+    if (trades.length === 0) {
+      return { currentStreak: 0, currentStreakType: null, longestWinStreak: 0, longestLossStreak: 0 };
+    }
+
+    const sorted = [...trades].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+    // Current streak from most recent backwards
+    let currentStreak = 0;
+    let currentStreakType = null;
+    for (let i = sorted.length - 1; i >= 0; i--) {
+      const type = sorted[i].pnl > 0 ? 'win' : sorted[i].pnl < 0 ? 'loss' : null;
+      if (type === null) break;
+      if (currentStreakType === null) currentStreakType = type;
+      if (type === currentStreakType) currentStreak++;
+      else break;
+    }
+
+    // Longest win and loss streaks ever
+    let longestWinStreak = 0, longestLossStreak = 0;
+    let tempWin = 0, tempLoss = 0;
+    sorted.forEach(t => {
+      if (t.pnl > 0) { tempWin++; tempLoss = 0; }
+      else if (t.pnl < 0) { tempLoss++; tempWin = 0; }
+      else { tempWin = 0; tempLoss = 0; }
+      if (tempWin > longestWinStreak) longestWinStreak = tempWin;
+      if (tempLoss > longestLossStreak) longestLossStreak = tempLoss;
+    });
+
+    return { currentStreak, currentStreakType, longestWinStreak, longestLossStreak };
+  }, [trades]);
+
   return (
     <TradingContext.Provider
       value={{
@@ -148,6 +179,7 @@ export const TradingProvider = ({ children }) => {
         getWinRate,
         getStats,
         getMonthlyProgress,
+        getStreaks,
       }}
     >
       {children}
