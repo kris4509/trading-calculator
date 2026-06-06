@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react';
 import { TradingContext } from '../context/TradingContext';
 import { Trash2, Plus, ChevronDown, ChevronUp, BookOpen, Edit3, Check, X } from 'lucide-react';
 
-const SETUPS = ['Breakout', 'Reversal', 'Trend Follow', 'Scalp', 'News Play', 'Range', 'Other'];
+const SETUPS = ['Even/Odd', 'Over/Under', 'Touch/No Touch', 'Higher/Lower', 'Match/Diff', 'Asian', 'Digits', 'Other'];
 const EMOTIONS = [
   { label: 'Calm 😌', value: 'calm' },
   { label: 'Confident 💪', value: 'confident' },
@@ -146,7 +146,7 @@ function SessionCard({ session, onDelete, onUpdate }) {
                   <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Instrument</label>
                   <input
                     type="text"
-                    placeholder="e.g. EUR/USD, BTC..."
+                    placeholder="e.g. Vol 75, Vol 100, Boom 1000..."
                     value={editData.instrument}
                     onChange={e => setEditData({ ...editData, instrument: e.target.value })}
                     className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 dark:text-white"
@@ -278,7 +278,7 @@ function DailyTracker() {
                     <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Instrument</label>
                     <input
                       type="text"
-                      placeholder="e.g. EUR/USD, BTC..."
+                      placeholder="e.g. Vol 75, Vol 100, Boom 1000..."
                       value={journalData.instrument}
                       onChange={e => setJournalData({ ...journalData, instrument: e.target.value })}
                       className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 dark:text-white"
