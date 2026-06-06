@@ -6,11 +6,13 @@ import Statistics from "./components/Statistics";
 import Settings from "./components/Settings";
 import Journal from "./components/Journal";
 import TradeCoach from "./components/TradeCoach";
+import RiskCalculator from "./components/RiskCalculator";
 import Header from "./components/Header";
 
 const TABS = [
   { id: "dashboard",  label: "Dashboard",  icon: "📊" },
   { id: "coach",      label: "Coach",      icon: "🤖" },
+  { id: "risk",       label: "Risk",       icon: "🛡️" },
   { id: "sessions",   label: "Sessions",   icon: "📝" },
   { id: "journal",    label: "Journal",    icon: "📖" },
   { id: "charts",     label: "Charts",     icon: "📈" },
@@ -101,6 +103,7 @@ function App() {
         >
           {activeTab === "dashboard"  && <Dashboard />}
           {activeTab === "coach"      && <TradeCoach />}
+          {activeTab === "risk"       && <RiskCalculator />}
           {activeTab === "sessions"   && <DailyTracker />}
           {activeTab === "journal"    && <Journal />}
           {activeTab === "charts"     && <Charts />}
