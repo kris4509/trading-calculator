@@ -16,6 +16,7 @@ import {
 } from 'recharts';
 import { TradingContext } from '../context/TradingContext';
 import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown } from 'lucide-react';
+import TradeReplay from './TradeReplay';
 
 // ── Calendar Heatmap ──────────────────────────────────────────────
 function CalendarHeatmap() {
@@ -57,6 +58,7 @@ function CalendarHeatmap() {
   const isCurrentMonth = year === today.getFullYear() && month === today.getMonth();
 
   const [hovered, setHovered] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(null);
 
   const tradingDays = Object.keys(dailyMap).length;
   const profitDays = values.filter(v => v > 0).length;
@@ -127,14 +129,16 @@ function CalendarHeatmap() {
           {days.map(({ day, dateStr, pnl, isToday, key }) => {
             if (!day) return <div key={key} />;
             const bg = getColor(pnl);
+            const hasTrades = pnl !== undefined;
             return (
               <div
                 key={key}
                 onMouseEnter={() => setHovered({ dateStr, pnl, day })}
                 onMouseLeave={() => setHovered(null)}
-                className={`relative aspect-square rounded-lg flex flex-col items-center justify-center cursor-default transition-transform hover:scale-110 hover:z-10 ${
+                onClick={() => hasTrades && setSelectedDate(dateStr)}
+                className={`relative aspect-square rounded-lg flex flex-col items-center justify-center transition-transform hover:scale-110 hover:z-10 ${
                   isToday ? 'ring-2 ring-blue-500 ring-offset-1 dark:ring-offset-slate-700' : ''
-                } ${!bg ? 'bg-gray-200 dark:bg-slate-600' : ''}`}
+                } ${hasTrades ? 'cursor-pointer' : 'cursor-default'} ${!bg ? 'bg-gray-200 dark:bg-slate-600' : ''}`}
                 style={bg ? { backgroundColor: bg } : {}}
               >
                 <span className={`text-xs font-semibold leading-none ${
@@ -185,6 +189,8 @@ function CalendarHeatmap() {
           <span className="text-xs text-gray-400 ml-3">More</span>
         </div>
       </div>
+
+      {selectedDate && <TradeReplay date={selectedDate} onClose={() => setSelectedDate(null)} />}
     </div>
   );
 }

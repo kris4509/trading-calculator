@@ -4,6 +4,13 @@ import { Shield, TrendingDown, AlertTriangle, DollarSign } from 'lucide-react';
 
 const MARTINGALE_OPTIONS = [2, 3, 4];
 const LOSS_OPTIONS = [3, 4, 5, 6];
+const PAYOUT_OPTIONS = [
+  { label: 'Vol 10/25', pct: 85 },
+  { label: 'Vol 50', pct: 88 },
+  { label: 'Vol 75/100', pct: 90 },
+  { label: 'Boom/Crash', pct: 92 },
+  { label: 'Vol 150/250', pct: 95 },
+];
 
 function NumberPad({ value, onChange }) {
   const handleTap = (digit) => {
@@ -56,6 +63,7 @@ function RiskCalculator() {
   const [stakeInput, setStakeInput] = useState('0.35');
   const [martingale, setMartingale] = useState(2);
   const [planLosses, setPlanLosses] = useState(3);
+  const [payoutIdx, setPayoutIdx] = useState(2);
 
   const stake = parseFloat(stakeInput) || 0;
 
@@ -70,7 +78,9 @@ function RiskCalculator() {
   }, [stake, martingale, planLosses]);
 
   const requiredCapital = parseFloat(sequence.reduce((sum, s) => sum + s, 0).toFixed(2));
-  const takeProfit = parseFloat((stake * 0.9).toFixed(2));
+  const payoutPct = PAYOUT_OPTIONS[payoutIdx].pct;
+  const takeProfit = parseFloat((stake * (payoutPct / 100)).toFixed(2));
+  const takeProfitPct = payoutPct;
   const stopLoss = requiredCapital;
 
   const today = new Date().toISOString().split('T')[0];
@@ -143,14 +153,14 @@ function RiskCalculator() {
         <NumberPad value={stakeInput} onChange={setStakeInput} />
       </div>
 
-      {/* Martingale & Losses */}
+      {/* Martingale & Losses & Payout */}
       <div className="rounded-xl p-4" style={{
         background: 'linear-gradient(135deg, rgba(15,23,42,0.8) 0%, rgba(20,30,55,0.8) 100%)',
         border: '1px solid rgba(59,130,246,0.12)',
       }}>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-3">
           <div>
-            <label className="text-xs font-semibold mb-2 block" style={{ color: 'rgba(148,163,184,0.6)' }}>MARTINGALE SIZE</label>
+            <label className="text-xs font-semibold mb-2 block" style={{ color: 'rgba(148,163,184,0.6)' }}>MARTINGALE</label>
             <div className="flex gap-1.5">
               {MARTINGALE_OPTIONS.map(m => (
                 <button key={m} onClick={() => setMartingale(m)}
@@ -164,7 +174,7 @@ function RiskCalculator() {
             </div>
           </div>
           <div>
-            <label className="text-xs font-semibold mb-2 block" style={{ color: 'rgba(148,163,184,0.6)' }}>PLAN FOR LOSSES</label>
+            <label className="text-xs font-semibold mb-2 block" style={{ color: 'rgba(148,163,184,0.6)' }}>LOSSES</label>
             <div className="flex gap-1.5">
               {LOSS_OPTIONS.map(n => (
                 <button key={n} onClick={() => setPlanLosses(n)}
@@ -177,13 +187,27 @@ function RiskCalculator() {
               ))}
             </div>
           </div>
+          <div>
+            <label className="text-xs font-semibold mb-2 block" style={{ color: 'rgba(148,163,184,0.6)' }}>PAYOUT</label>
+            <div className="flex gap-1.5 flex-wrap">
+              {PAYOUT_OPTIONS.map((opt, i) => (
+                <button key={i} onClick={() => setPayoutIdx(i)}
+                  className={`px-2 py-2.5 rounded-lg text-xs font-bold transition-all`}
+                  style={{
+                    background: payoutIdx === i ? 'rgba(59,130,246,0.2)' : 'rgba(255,255,255,0.04)',
+                    border: `1px solid ${payoutIdx === i ? 'rgba(59,130,246,0.5)' : 'rgba(255,255,255,0.08)'}`,
+                    color: payoutIdx === i ? '#60a5fa' : 'rgba(148,163,184,0.5)',
+                  }}>{opt.label}<br /><span style={{ fontSize: '9px' }}>{opt.pct}%</span></button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Results */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: 'Take Profit', value: `$${takeProfit}`, sub: `+${stake > 0 ? ((takeProfit / stake) * 100).toFixed(0) : 0}%`, color: '#22c55e' },
+          { label: 'Take Profit', value: `$${takeProfit}`, sub: `${takeProfitPct}% payout`, color: '#22c55e' },
           { label: 'Stop Loss', value: `$${stopLoss}`, sub: `${planLosses} loss streak`, color: '#ef4444' },
           { label: 'Required Capital', value: `$${requiredCapital}`, sub: `${((requiredCapital / balance) * 100).toFixed(1)}% of balance`, color: '#f59e0b' },
         ].map(s => (
