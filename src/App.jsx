@@ -5,10 +5,12 @@ import Charts from "./components/Charts";
 import Statistics from "./components/Statistics";
 import Settings from "./components/Settings";
 import Journal from "./components/Journal";
+import TradeCoach from "./components/TradeCoach";
 import Header from "./components/Header";
 
 const TABS = [
   { id: "dashboard",  label: "Dashboard",  icon: "📊" },
+  { id: "coach",      label: "Coach",      icon: "🤖" },
   { id: "sessions",   label: "Sessions",   icon: "📝" },
   { id: "journal",    label: "Journal",    icon: "📖" },
   { id: "charts",     label: "Charts",     icon: "📈" },
@@ -98,6 +100,7 @@ function App() {
           }}
         >
           {activeTab === "dashboard"  && <Dashboard />}
+          {activeTab === "coach"      && <TradeCoach />}
           {activeTab === "sessions"   && <DailyTracker />}
           {activeTab === "journal"    && <Journal />}
           {activeTab === "charts"     && <Charts />}
